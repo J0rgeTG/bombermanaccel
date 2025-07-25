@@ -3,6 +3,7 @@ from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.screenmanager import ScreenManager
 from plyer import accelerometer
+from plyer.platforms.android import AndroidAccelerometer
 from widgets import Character
 import sys
 
@@ -25,6 +26,9 @@ class Bomberman(App):
 
         if sys.platform == 'android':
             try:
+                from plyer.platforms.android import AndroidAccelerometer
+                accelerometer._backend = AndroidAccelerometer()
+
                 accelerometer.enable()
                 print("✅ Acelerómetro habilitado correctamente")
             except NotImplementedError:

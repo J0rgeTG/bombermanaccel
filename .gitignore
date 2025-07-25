@@ -1,0 +1,24 @@
+# Ignorar archivos de compilación de Buildozer y Kivy
+.buildozer/
+bin/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Archivos temporales
+*.log
+*.tmp
+
+# Android y compilación
+*.apk
+*.keystore
+*.spec
+
+# Otras plataformas
+*.exe
+*.so
+*.dylib
