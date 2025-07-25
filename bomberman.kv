@@ -1,0 +1,18 @@
+#:import widgets widgets
+
+FloatLayout:
+    Level:
+        id: level
+        size_hint: 1, 0.9  # Ocupa el 90% superior de la pantalla
+        pos_hint: {'top': 1}
+
+    BoxLayout:
+        size_hint: 1, 0.1  # Barra inferior
+        pos_hint: {'x': 0, 'y': 0}
+        padding: [20, 5]
+        spacing: 20
+
+        Button:
+            text: "Bomb"
+            font_size: '20sp'
+            on_press: root.ids.level.trigger_bomb(self)

@@ -1,0 +1,41 @@
+<Level>:
+    size_hint: 1, 1
+    pos_hint: {'x': 0, 'y': 0}
+    width: self.height
+    players_area: players_area
+
+    canvas.before:
+        Color:
+            rgb: .3, .1, .05
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+    FloatLayout:
+        id: players_area
+
+<Spawn@Grass>:
+
+<Grass@Tile>:
+    canvas.before:
+        Color:
+            rgb: .1, .7, .15
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Block@Tile>:
+    canvas.before:
+        Color:
+            rgb: .3, .3, .35
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Rock@Tile>:
+    canvas.before:
+        Color:
+            rgb: .1, .1, .15
+        Rectangle:
+            pos: self.pos
+            size: self.size

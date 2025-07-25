@@ -1,2 +1,2 @@
-# bombermanaccel
-Bomberbam hecho en py usando kivy y plyer para sensor del acelerometro
+# Proyecto Bomberman con acelerómetro
+Juego adaptado con Kivy y acelerómetro, exportable a Android vía Buildozer.
