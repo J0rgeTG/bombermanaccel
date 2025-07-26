@@ -51,7 +51,6 @@ class Level(Widget):
     def trigger_bomb(self, instance):
         char = self.players[0]
 
-        # Buscar el tile tipo 'Grass' que realmente está debajo del personaje
         tile = None
         for t in self.map.children:
             if isinstance(t, Factory.Grass) and t.collide_widget(char):
@@ -62,12 +61,10 @@ class Level(Widget):
             print("⛔ No se encontró un tile válido debajo del personaje.")
             return
 
-        # Verificar que no haya ya una bomba en esa casilla
         if any(b.tile is tile for b in self.bombs):
             print("⚠️ Ya hay una bomba en esta casilla.")
             return
 
-        # Colocar la bomba solo si está permitido
         bomb = Bomb(level=self, tile=tile, owner=char)
         self.add_widget(bomb, index=1)
     
@@ -146,6 +143,23 @@ class Level(Widget):
                 ) for bomb in self.bombs
             ])
         )
+    def reset(self):
+        if hasattr(self, "players_area"):
+            self.players_area.clear_widgets()
+        self.players.clear()
+        self.bombs.clear()
+        self.spawns.clear()
+        if hasattr(self, "map"):
+            self.map.clear_widgets()
+        cols, rows = self.map_size
+        for idx, symbol in enumerate(self.map_data):
+            x = idx % cols
+            y = rows - 1 - (idx // cols)
+            TileCls = tile_manager.tile(self.map_tiles[symbol])
+            tile = TileCls(coords=(x, y))
+            self.map.add_widget(tile)
+            if self.map_tiles[symbol] == 'Spawn':
+                self.spawns.append(idx)
 
 
 class Tile(Widget):
@@ -167,7 +181,6 @@ class TileManager(object):
 
     def tile(self, tile_name):
         if tile_name not in self.tiles:
-            # Try lazy-loading tiles from the Factory
             try:
                 getattr(Factory, tile_name)()
             except:

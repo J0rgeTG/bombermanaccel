@@ -62,16 +62,22 @@ class Character(Widget):
 
     def on_coords(self, character, coords):
         if not self.level:
-            return  # Not spawned
+            return
         self.update_coords()
 
     def update_coords(self):
         coords = self.coords
-        tile = self.level.tile_at(*[int(i) for i in coords])
+        x, y = int(coords[0]), int(coords[1])
+
+        if not (0 <= x < self.level.map_size[0] and 0 <= y < self.level.map_size[1]):
+            print(f"⚠️ Coordenadas inválidas en update_coords: ({x}, {y})")
+            return
+
+        tile = self.level.tile_at(x, y)
         self.scale = min(*tile.size) / 100.
         self.center = (
-            tile.x + (coords[0] - int(coords[0])) * tile.width,
-            tile.y + (coords[1] - int(coords[1])) * tile.height,
+            tile.x + (coords[0] - x) * tile.width,
+            tile.y + (coords[1] - y) * tile.height,
         )
 
     def update_keys(self, state, keycode):
@@ -98,10 +104,6 @@ class Character(Widget):
                 self.coord_x += self.movement_speed * dt / 100.
             if action == 'left':
                 self.coord_x -= self.movement_speed * dt / 100.
-            if action == 'bomb':
-                self.current_actions.remove('bomb')
-                level = self.level
-                tile = level.tile_at(*level.coords(*self.center))
             if action == 'bomb':
                 self.current_actions.remove('bomb')
                 level = self.level
@@ -149,7 +151,6 @@ class Character(Widget):
         level = self.level
         radius = self.radius / 100.
 
-        # Check map edges
         for axis, coord in enumerate(self.coords):
             min_axis, max_axis = (
                 radius,
@@ -160,7 +161,6 @@ class Character(Widget):
                 min(max_axis, coord)
             )
 
-        # Evaluate the 8 neighboring tiles
         for nid, offset in enumerate((
             (-1, +1), (+0, +1), (+1, +1),
             (-1, +0),           (+1, +0),
@@ -172,25 +172,22 @@ class Character(Widget):
                 neighbor[0] >= level.map_size[0] or
                 neighbor[1] >= level.map_size[1]
             ):
-                # Outside of map
                 continue
             tile = level.tile_at(*neighbor)
             if level.collides(tile, self):
                 tcoords = tile.coords
 
-                # Check tile edges
                 for axis, coord in enumerate(self.coords):
                     na = not axis
                     for side in (0, 1):
                         if(
-                            coord - radius < tcoords[axis] + side < coord + radius and  # noqa
+                            coord - radius < tcoords[axis] + side < coord + radius and
                             tcoords[na] <= self.coords[na] <= tcoords[na] + 1
                         ):
                             self.coords[axis] = tcoords[axis] + side + (
                                 radius if side else -radius
                             )
 
-                # Check tile corners
                 for corner, neighbors_offset in (
                     ((tcoords[0], tcoords[1]), ((-1, 0), (0, -1))),
                     ((tcoords[0] + 1, tcoords[1]), ((1, 0), (0, -1))),
@@ -217,17 +214,78 @@ class Character(Widget):
                         ]
     
     def move(self, direction):
-        # mueve el personaje según el acelerómetro
-        step = self.movement_speed / 100.
-        if direction == 'up':
-            self.coord_y += step
-        elif direction == 'down':
-            self.coord_y -= step
-        elif direction == 'right':
-            self.coord_x += step
-        elif direction == 'left':
-            self.coord_x -= step
+        if not self.level:
+            print("🚫 No hay nivel asociado")
+            return
 
+        step = self.movement_speed / 100.
+        new_x, new_y = self.coord_x, self.coord_y
+
+        if direction == 'up':
+            new_y += step
+        elif direction == 'down':
+            new_y -= step
+        elif direction == 'right':
+            new_x += step
+        elif direction == 'left':
+            new_x -= step
+
+        max_x = self.level.map_size[0] - 0.5
+        max_y = self.level.map_size[1] - 0.5
+        min_x = 0.5
+        min_y = 0.5
+
+        if not (min_x <= new_x <= max_x and min_y <= new_y <= max_y):
+            print(f"🚧 Movimiento cancelado: fuera del mapa ({new_x:.2f}, {new_y:.2f})")
+            return
+
+        self.coord_x = new_x
+        self.coord_y = new_y
+
+    def move_accel(self, direction, step):
+
+        step = min(step, 0.2) 
+
+        if not self.level:
+            print("🚫 No hay nivel asociado")
+            return
+
+        new_x, new_y = self.coord_x, self.coord_y
+
+        if direction == 'up':
+            new_y += step
+        elif direction == 'down':
+            new_y -= step
+        elif direction == 'right':
+            new_x += step
+        elif direction == 'left':
+            new_x -= step
+
+        max_x = self.level.map_size[0] - 0.5
+        max_y = self.level.map_size[1] - 0.5
+        min_x = 0.5
+        min_y = 0.5
+
+        if not (min_x <= new_x <= max_x and min_y <= new_y <= max_y):
+            print(f"🚧 Movimiento cancelado: fuera del mapa ({new_x:.2f}, {new_y:.2f})")
+            return
+
+        self.coord_x = new_x
+        self.coord_y = new_y
+
+        tile = self.level.tile_at(int(self.coord_x), int(self.coord_y))
+        if self.level.collides(tile, self):
+            print("🚫 Movimiento bloqueado por colisión con obstáculo")
+            return
+    
+    def die(self):
+        print("☠️ El personaje ha muerto")
+        app = App.get_running_app()
+        if hasattr(self.level, "players_area"):
+            self.level.players_area.remove_widget(self)
+        if self in self.level.players:
+            self.level.players.remove(self)
+        app.on_game_over()
 
 Factory.register('Character', module='widgets')
 Builder.load_file('widgets/character.kv')

@@ -5,6 +5,8 @@ ScreenManager:
         name: "menu"
     GameScreen:
         name: "game"
+    GameOverScreen:
+        name: "gameover"
 
 <MenuScreen@Screen>:
     FloatLayout:
@@ -44,3 +46,34 @@ ScreenManager:
                 text: "Bomb"
                 font_size: '20sp'
                 on_press: level.trigger_bomb(self)
+
+<GameOverScreen@Screen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: dp(60), dp(80)
+        spacing: dp(24)
+        canvas.before:
+            Color:
+                rgba: .1, .1, .1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Label:
+            text: "¡Game Over!"
+            font_size: '32sp'
+            size_hint_y: 0.5
+            color: 1, .3, .3, 1
+        Button:
+            text: "Reintentar"
+            size_hint: (1, None)
+            height: dp(44)
+            font_size: '20sp'
+            on_release: app.restart_game()
+        Button:
+            text: "Salir"
+            size_hint: (1, None)
+            height: dp(44)
+            font_size: '20sp'
+            on_release: app.stop()
+
+

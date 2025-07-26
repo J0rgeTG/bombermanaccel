@@ -63,12 +63,28 @@ class Bomb(Widget):
                     )
                     if not owner.bomb_wall_traversal:
                         break
+
+        for character in self.level.players[:]:
+            x = int(character.coord_x)
+            y = int(character.coord_y)
+            if (x, y) == (self.tile.coord_x, self.tile.coord_y):
+                print("💥 ¡Jugador alcanzado por la explosión!")
+                character.die()
+            else:
+                for direction in ((-1, 0), (0, -1), (1, 0), (0, 1)):
+                    for distance in range(1, self.owner.bomb_power + 1):
+                        if (x, y) == (
+                            self.tile.coord_x + direction[0] * distance,
+                            self.tile.coord_y + direction[1] * distance
+                        ):
+                            print("💥 ¡Jugador alcanzado por la explosión!")
+                            character.die()
+                            break
+    
         self.parent.remove_widget(self)
         level.bombs.remove(self)
         owner.bombs.remove(self)
 
-    # This whole no_collision system is to prevent characters being "bumped"
-    # out of the tile containing the bomb when only their center is out
     def prepare_no_collision(self):
         level = self.level
         for character in level.players:
